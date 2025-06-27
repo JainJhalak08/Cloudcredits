@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Energy Consumption Predictor ⚡</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Outfit', sans-serif;
+      background: linear-gradient(135deg, #fdfbfb, #ebedee, #d2f1f7, #c0e6ff, #e2f3f5, #f5fcff);
+      background-size: 600% 600%;
+      animation: gradientShift 18s ease infinite;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+      padding: 40px 50px;
+      max-width: 420px;
+      width: 90%;
+      text-align: center;
+      color: #004d61;
+      animation: fadeIn 0.6s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        transform: translateY(20px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    h2 {
+      font-size: 26px;
+      font-weight: 700;
+      margin-bottom: 25px;
+      color: #0077b6;
+    }
+
+    label {
+      font-weight: 600;
+      display: block;
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 12px;
+      border: none;
+      outline: none;
+      background: rgba(255, 255, 255, 0.85);
+      margin-bottom: 20px;
+      transition: 0.3s;
+    }
+
+    input[type="number"]:focus {
+      background: #ffffff;
+      box-shadow: 0 0 0 3px #00aaff;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      color: white;
+      background: linear-gradient(to right, #00b4d8, #0077b6);
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease-in-out;
+    }
+
+    button:hover {
+      background: linear-gradient(to right, #0077b6, #023e8a);
+    }
+
+    #result {
+      margin-top: 25px;
+      font-size: 18px;
+    }
+
+    #result p {
+      background-color: #ffffffcc;
+      padding: 15px;
+      border-radius: 14px;
+      font-weight: 600;
+      color: #005f73;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    ::selection {
+      background: #00b4d8;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>🔋 Energy Consumption Forecast</h2>
+    <form id="forecastForm">
+      <label for="hour">Hour Number (e.g. 24, 50, 250):</label>
+      <input type="number" id="hour" name="hour" placeholder="Enter hour number..." required>
+      <button type="submit">🔍 Predict</button>
+    </form>
+    <div id="result"></div>
+  </div>
+
+  <script>
+    document.getElementById('forecastForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const formData = new FormData();
+      formData.append("hour", document.getElementById("hour").value);
+
+      const res = await fetch("/predict", {
+        method: "POST",
+        body: formData
+      });
+
+      const data = await res.json();
+      document.getElementById("result").innerHTML = `
+        <p>⚡ Predicted Energy Consumption: <strong>${data.predicted_consumption} MW</strong></p>
+      `;
+    });
+  </script>
+
+</body>
+</html>
