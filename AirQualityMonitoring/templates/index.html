@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>🌍 Air Quality Predictor</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Segoe UI", sans-serif;
+      background: linear-gradient(135deg, #43cea2, #185a9d);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+
+    h2 {
+      color: white;
+      margin-bottom: 25px;
+      font-size: 2rem;
+      text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.4);
+    }
+
+    form {
+      background: rgba(255, 255, 255, 0.95);
+      padding: 30px 40px;
+      border-radius: 20px;
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+      width: 100%;
+      max-width: 450px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    input[type="number"] {
+      padding: 12px;
+      border: 2px solid #d3d3d3;
+      border-radius: 10px;
+      font-size: 16px;
+      transition: border-color 0.3s;
+    }
+
+    input[type="number"]:focus {
+      border-color: #185a9d;
+      outline: none;
+    }
+
+    button {
+      padding: 12px;
+      font-size: 16px;
+      background-color: #185a9d;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #0b3c6e;
+    }
+
+    #result {
+      margin-top: 25px;
+      background: white;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+      width: 100%;
+      max-width: 450px;
+      text-align: center;
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    #result p {
+      font-size: 18px;
+      margin: 10px 0;
+    }
+
+    .level {
+      padding: 8px 15px;
+      font-weight: bold;
+      border-radius: 25px;
+      display: inline-block;
+      margin-top: 10px;
+      font-size: 18px;
+      transition: transform 0.3s;
+    }
+
+    .low {
+      background-color: #c8e6c9;
+      color: #1b5e20;
+    }
+
+    .moderate {
+      background-color: #fff59d;
+      color: #f57f17;
+    }
+
+    .high {
+      background-color: #ffcdd2;
+      color: #c62828;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 500px) {
+      form, #result {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h2>🌍 Air Quality Predictor</h2>
+
+  <form id="aqiForm">
+    <input type="number" name="pm2_5" step="any" placeholder="PM2.5 (µg/m³)" required />
+    <input type="number" name="pm10" step="any" placeholder="PM10 (µg/m³)" required />
+    <input type="number" name="no2" step="any" placeholder="NO2 (ppb)" required />
+    <input type="number" name="so2" step="any" placeholder="SO2 (ppb)" required />
+    <input type="number" name="co" step="any" placeholder="CO (ppm)" required />
+    <input type="number" name="o3" step="any" placeholder="O3 (ppb)" required />
+    <button type="submit">🔍 Predict AQI</button>
+  </form>
+
+  <div id="result" style="display:none;"></div>
+
+  <script>
+    document.getElementById("aqiForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const response = await fetch("/predict", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await response.json();
+
+      let levelClass = "";
+      if (data.level === "Low") levelClass = "low";
+      else if (data.level === "Moderate") levelClass = "moderate";
+      else if (data.level === "High") levelClass = "high";
+
+      document.getElementById("result").style.display = 'block';
+      document.getElementById("result").innerHTML = `
+        <p>Predicted AQI: <strong>${data.aqi}</strong></p>
+        <p>Cluster ID: <strong>${data.cluster}</strong></p>
+        <p class="level ${levelClass}">Pollution Level: ${data.level}</p>
+      `;
+    });
+  </script>
+
+</body>
+</html>
