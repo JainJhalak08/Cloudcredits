@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>🎬 Movie Recommendation System</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      height: 100vh;
+      margin: 0;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+
+    .container {
+      background-color: rgba(255, 255, 255, 0.1);
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.4);
+      width: 90%;
+      max-width: 500px;
+      text-align: center;
+    }
+
+    h2 {
+      color: #ffdd59;
+      margin-bottom: 20px;
+    }
+
+    input[type="number"] {
+      padding: 12px;
+      border-radius: 8px;
+      border: none;
+      font-size: 1rem;
+      width: 80%;
+      margin-bottom: 15px;
+    }
+
+    button {
+      padding: 12px 24px;
+      background-color: #00b894;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #019875;
+    }
+
+    #result {
+      margin-top: 25px;
+      text-align: left;
+    }
+
+    .error {
+      color: #ff7675;
+      font-weight: bold;
+    }
+
+    ul {
+      list-style-type: none;
+      padding-left: 0;
+    }
+
+    li {
+      padding: 6px;
+      margin-bottom: 5px;
+      background-color: rgba(255, 255, 255, 0.1);
+      border-left: 4px solid #00cec9;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>🎥 Enter User ID (1–99)</h2>
+    <form id="recommendForm">
+      <input type="number" name="user_id" id="user_id" min="1" max="99" required placeholder="e.g. 1, 2, 5">
+      <br>
+      <button type="submit">Get Recommendations</button>
+    </form>
+    <div id="result"></div>
+  </div>
+
+  <script>
+    document.getElementById("recommendForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const userId = document.getElementById("user_id").value.trim();
+      const resultDiv = document.getElementById("result");
+
+      if (!/^\d{1,2}$/.test(userId) || parseInt(userId) < 1 || parseInt(userId) > 99) {
+        resultDiv.innerHTML = `<p class="error">❌ Invalid User ID. Enter a number between 1 and 99.</p>`;
+        return;
+      }
+
+      const formData = new FormData(e.target);
+      try {
+        const response = await fetch("/recommend", {
+          method: "POST",
+          body: formData
+        });
+
+        const data = await response.json();
+
+        if (data.error) {
+          resultDiv.innerHTML = `<p class="error">${data.error}</p>`;
+        } else if (data.recommendations.length > 0) {
+          resultDiv.innerHTML = "<h3>Recommended Movies:</h3><ul>" +
+            data.recommendations.map(movie => `<li>${movie}</li>`).join('') +
+            "</ul>";
+        } else {
+          resultDiv.innerHTML = `<p class="error">No recommendations found for this user.</p>`;
+        }
+      } catch (error) {
+        console.error("Server Error:", error);
+        resultDiv.innerHTML = `<p class="error">Server error. Please try again later.</p>`;
+      }
+    });
+  </script>
+</body>
+</html>
