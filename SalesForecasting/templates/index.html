@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sales Forecasting App</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #dbeafe, #f0f9ff);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 30px;
+    }
+
+    .container {
+      background-color: #ffffff;
+      padding: 40px 30px;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+      max-width: 600px;
+      width: 100%;
+      animation: fadeIn 0.6s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h2 {
+      text-align: center;
+      font-size: 28px;
+      color: #1e3a8a;
+      margin-bottom: 30px;
+    }
+
+    label {
+      font-weight: 600;
+      display: block;
+      margin: 18px 0 8px;
+      color: #1f2937;
+    }
+
+    input[type="date"],
+    input[type="number"] {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      transition: border-color 0.3s;
+    }
+
+    input:focus {
+      border-color: #2563eb;
+      outline: none;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 25px;
+      font-size: 16px;
+      color: #fff;
+      background-color: #1d4ed8;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #2563eb;
+    }
+
+    #output {
+      margin-top: 35px;
+    }
+
+    #output h3 {
+      font-size: 20px;
+      color: #0f172a;
+      margin-bottom: 10px;
+      border-bottom: 1px solid #e5e7eb;
+      padding-bottom: 8px;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    li {
+      background-color: #f1f5f9;
+      padding: 10px 14px;
+      margin-bottom: 8px;
+      border-radius: 6px;
+      transition: transform 0.2s ease;
+    }
+
+    li:hover {
+      transform: translateX(4px);
+    }
+
+    .spinner {
+      margin: 20px auto;
+      border: 5px solid #f3f3f3;
+      border-top: 5px solid #1d4ed8;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .error {
+      color: red;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>📊 Intelligent Sales Forecasting</h2>
+    <form id="forecastForm">
+      <label for="startDate">📅 Select Starting Date</label>
+      <input type="date" id="startDate" required>
+
+      <label for="months">🔢 Enter Number of Months</label>
+      <input type="number" id="months" min="1" placeholder="e.g. 3" required>
+
+      <button type="submit">🔮 Forecast Sales</button>
+    </form>
+
+    <div id="output"></div>
+  </div>
+
+  <script>
+    document.getElementById('forecastForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const startDateInput = document.getElementById('startDate').value;
+      const months = document.getElementById('months').value;
+      const output = document.getElementById('output');
+      output.innerHTML = '';
+
+      if (!startDateInput || !months) {
+        output.innerHTML = '<p class="error">❌ Please fill out both fields.</p>';
+        return;
+      }
+
+      const startDate = new Date(startDateInput);
+      output.innerHTML = '<div class="spinner"></div>';
+
+      try {
+        const response = await fetch('/forecast', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            months: months,
+            start_date: startDate.toISOString().split('T')[0]
+          })
+        });
+
+        if (!response.ok) throw new Error("Server error. Try again.");
+
+        const data = await response.json();
+        let resultHTML = "<h3>📅 Forecasted Sales</h3><ul>";
+        for (const [month, value] of Object.entries(data)) {
+          resultHTML += `<li><strong>${month}</strong>: ₹${value}</li>`;
+        }
+        resultHTML += "</ul>";
+        output.innerHTML = resultHTML;
+
+      } catch (error) {
+        output.innerHTML = `<p class="error">❌ ${error.message}</p>`;
+      }
+    });
+  </script>
+</body>
+</html>
